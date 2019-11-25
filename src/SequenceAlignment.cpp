@@ -1,5 +1,7 @@
 #include "SequenceAlignment.h"
 #include <algorithm>
+#include <pthread.h>
+#include <time.h>
 
 
 //creates comparison file (.result)
@@ -56,6 +58,9 @@ void SequenceAlignment::createFile(){
 };
 
 void SequenceAlignment::processGenes(){
+    struct timespec start, stop;
+    double time;
+    if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
     //initialization
     short initScore = 0;
     //direction initVal = left;
@@ -138,6 +143,12 @@ void SequenceAlignment::processGenes(){
         }
 
     }
+    
+    if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
+    time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+    printf("Execution time = %f sec.\n", time);
+    
+    
     //delete grids to improve performance
     for(int i = 0; i < mGridLength; i++){
         delete[] mScoregrid[i];

@@ -2,6 +2,8 @@
 #include <iostream>
 #include "DNATranslator.h"
 #include "SequenceAlignment.h"
+#include <pthread.h>
+
 int main(int argc, const char* argv[])
 {
     // TODO
