@@ -7,8 +7,10 @@
 int main(int argc, const char* argv[])
 {
     // TODO
-        std::string f1 = argv[1];
-        std::string f2 = argv[2];
+       std::string f1 = argv[1];
+       std::string f2 = argv[2];
+    // std::string f1 = "input/Zaire_ebolavirus.fasta";
+    // std::string f2 = "input/Reston_ebolavirus.fasta";
         SequenceAlignment test(f1,f2);
         test.processGenes();
         test.createFile();

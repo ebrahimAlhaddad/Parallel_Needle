@@ -9,11 +9,11 @@
 
 class SequenceAlignment{
 private:
-    enum direction:char {
-        aboveLeft,
-        left,
-        above
-    };
+//    enum direction:char {
+//        aboveLeft,
+//        left,
+//        above
+//    };
     FASTAParse* mFastaFile1;
     FASTAParse* mFastaFile2;
     int mGridLength;
