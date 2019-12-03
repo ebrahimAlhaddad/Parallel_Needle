@@ -7,7 +7,7 @@
 #define above 2
 
 //length is ROWS
-//width is COLS
+//width is mGridWidthS
 // A utility function to find min of two integers
 int minu(int a, int b)
 { return (a < b)? a: b; } 
@@ -19,21 +19,6 @@ int max(int a, int b)
 { return (a > b)? a: b; }
 
 
-//  for (int line=2; line<=(ROW + COL -1); line++)
-    // {
-    //     int start_col =  max(0, line-ROW);
-    //     int count = min(line, (COL-start_col), ROW);
-    //     /* Print elements of this line */
-    //     for (int j=1; j<count; j++)
-    //         {
-    //          printf("(%d,%d)", minu(ROW, line)-j,start_col+j);
-                //Pass all of them to an array of size count
-                //Distribute array amongst p threads
-                //Pthreads will execute on the indices of the array
-    //         }
-    //     /* Ptint elements of next diagonal on next line */
-    //     printf("\n");
-    // }
 
 struct thread_data{
     int thread_id;
@@ -185,6 +170,8 @@ void SequenceAlignment::processGenes(){
         }
     }
     
+
+
     //pThread setup
     int rc;
     int NUM_THREADS = 1;
@@ -207,6 +194,36 @@ void SequenceAlignment::processGenes(){
     }
 
     
+
+    //Diagonal Traversal
+    const int indices_size = minu(mGridLength,mGridWidth) + 1;
+    int *i_indices = new int[indices_size];
+    int *j_indices = new int[indices_size];
+
+    for (int line=2; line<=(mGridLength + mGridWidth -1); line++)
+    {
+        int start_col =  max(0, line-mGridLength);
+        int count = min(line, (mGridLength-start_col), mGridLength);
+        /* Print elements of this line */
+        for (int j=1; j<count; j++)
+            {
+             i_indices[i] = minu(mGridLength, line)-j;
+             j_indices[i] = start_col+j;
+                //printf("(%d,%d)", minu(mGridLength, line)-j,start_col+j);
+                //Pass all of them to an array of size count
+                //Distribute array amongst p_threads
+                //Pthreads will execute on the indices of the arrays
+            }
+        
+        /* Ptint elements of next diagonal on next line */
+
+    }
+
+
+
+
+
+
     //picking the perfect alignment
     int finalI = mGridLength;
     int finalJ = mGridWidth;
