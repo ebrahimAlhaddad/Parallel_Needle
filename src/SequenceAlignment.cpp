@@ -28,8 +28,10 @@ struct thread_data{
     int p_gridWidth;
     FASTAParse *p_fastaFile1;
     FASTAParse *p_fastaFile2;
-    
-    
+    int *p_i_indices;
+    int *p_j_indices;
+    int start;
+    int end;
 };
 
 void *threadFunc(void *threadarg){
@@ -42,27 +44,38 @@ void *threadFunc(void *threadarg){
     int mGridWidth = my_data->p_gridWidth;
     FASTAParse *mFastaFile1 = my_data->p_fastaFile1;
     FASTAParse *mFastaFile2 = my_data->p_fastaFile2;
-
+    int *i_indices = my_data->p_i_indices;
+    int *j_indices = my_data->p_j_indices;
+    int start = my_data->start;
+    int end = my_data->end;
     //main loop
     short scoreA = 0;
     short scoreB = 0;
     short scoreC = 0;
     short max;
-    for(int i = 1; i < mGridLength + 1; i++){
-        for(int j = 1; j < mGridWidth + 1; j++){
-            //compute score
+    for(int k = start; k < end; k++){
+        //compute score
             //scoreA
-            scoreA = mScoregrid[i-1][j-1];
-            if(mFastaFile2->mSequence[i-1] == mFastaFile1->mSequence[j-1]){
+            scoreA = mScoregrid[i_indices[k]-1][j_indices[k]-1];
+            if(mGridWidth>mGridLength){
+                if(mFastaFile2->mSequence[i_indices[k]-1] == mFastaFile1->mSequence[j_indices[k]-1]){
                 scoreA++;
+                 } else {
+                  scoreA--;
+                }
             } else {
-                scoreA--;
+                if(mFastaFile1->mSequence[i_indices[k]-1] == mFastaFile2->mSequence[j_indices[k]-1]){
+                scoreA++;
+                 } else {
+                  scoreA--;
+                }
             }
+            
             //scoreB
-            scoreB = mScoregrid[i][j-1];
+            scoreB = mScoregrid[i_indices[k]][j_indices[k]-1];
             scoreB--;
             //scoreC
-            scoreC = mScoregrid[i-1][j];
+            scoreC = mScoregrid[i_indices[k]-1][j_indices[k]];
             scoreC--;
             //compare scores
             if(scoreB > scoreA)
@@ -73,23 +86,17 @@ void *threadFunc(void *threadarg){
                 max = scoreC;
             //fill grid
             if(max == scoreA){
-                mScoregrid[i][j] = max;
-                mChargrid[i][j] = aboveLeft;
+                mScoregrid[i_indices[k]][j_indices[k]] = max;
+                mChargrid[i_indices[k]][j_indices[k]] = aboveLeft;
             } else if(max == scoreB){
-                mScoregrid[i][j] = max;
-                mChargrid[i][j] = left;
+                mScoregrid[i_indices[k]][j_indices[k]] = max;
+                mChargrid[i_indices[k]][j_indices[k]] = left;
             } else if(max == scoreC){
-                mScoregrid[i][j] = max;
-                mChargrid[i][j] = above;
+                mScoregrid[i_indices[k]][j_indices[k]] = max;
+                mChargrid[i_indices[k]][j_indices[k]] = above;
             }
-        }
-        for(int i = 0; i <mGridLength + 1; i++){
-            for (int j = 0; j < mGridWidth+1; j++){
-                printf("| %d |",mScoregrid[i][j]);
-            }
-            printf("\n");
-        }
     }
+    
     
     printf("Thread %d completed execution \n", thread_id);
     pthread_exit(NULL);
@@ -107,8 +114,14 @@ void SequenceAlignment::createFile(){
     std::ofstream oFile("output/match.result");
     if(oFile.is_open()){
         //print headers
-        oFile << "A: " << mFastaFile1->mHeader << std::endl;
-        oFile << "B: " << mFastaFile2->mHeader << std::endl;
+        if(mGridWidth>mGridLength){
+            oFile << "A: " << mFastaFile1->mHeader << std::endl;
+            oFile << "B: " << mFastaFile2->mHeader << std::endl;
+        } else {
+            oFile << "A: " << mFastaFile2->mHeader << std::endl;
+            oFile << "B: " << mFastaFile1->mHeader << std::endl;
+        }
+        
         oFile << "Score: " << mBestscore <<std::endl << std::endl;
         int tempInd;
         int i = 0;
@@ -169,54 +182,56 @@ void SequenceAlignment::processGenes(){
             mChargrid[i][0] = above;
         }
     }
-    
-
-
-    //pThread setup
-    int rc;
-    int NUM_THREADS = 1;
-    struct thread_data thread_data_array[NUM_THREADS];
-    pthread_t threads[NUM_THREADS];
-    for(int i = 0; i < NUM_THREADS; ++i){
-        thread_data_array[i].thread_id = i;
-        thread_data_array[i].p_charGrid = mChargrid;
-        thread_data_array[i].p_scoreGrid = mScoregrid;
-        thread_data_array[i].p_gridWidth = mGridWidth;
-        thread_data_array[i].p_gridLength = mGridLength;
-        thread_data_array[i].p_fastaFile1 = mFastaFile1;
-        thread_data_array[i].p_fastaFile2 = mFastaFile2;
-        rc = pthread_create(&threads[i],NULL,threadFunc,(void*)&thread_data_array[i]);
-        if (rc) { printf("ERROR; return code from pthread_create() is %d\n", rc); exit(-1);}
-        
-    }
-    for(int i=0; i <NUM_THREADS; i++){
-        (void) pthread_join(threads[i], NULL);
-    }
-
-    
 
     //Diagonal Traversal
     const int indices_size = minu(mGridLength,mGridWidth) + 1;
+    printf("length:%d, width:%d:",mGridLength,mGridWidth);
     int *i_indices = new int[indices_size];
     int *j_indices = new int[indices_size];
-
+    //pThread setup
+    int rc;
+    int NUM_THREADS = 2;
+    struct thread_data thread_data_array[NUM_THREADS];
+    pthread_t threads[NUM_THREADS];
     for (int line=2; line<=(mGridLength + mGridWidth -1); line++)
     {
         int start_col =  max(0, line-mGridLength);
         int count = min(line, (mGridLength-start_col), mGridLength);
         /* Print elements of this line */
+        int k = 0;
         for (int j=1; j<count; j++)
             {
-             i_indices[i] = minu(mGridLength, line)-j;
-             j_indices[i] = start_col+j;
-                //printf("(%d,%d)", minu(mGridLength, line)-j,start_col+j);
-                //Pass all of them to an array of size count
-                //Distribute array amongst p_threads
-                //Pthreads will execute on the indices of the arrays
+             i_indices[k] = minu(mGridLength, line)-j;
+             j_indices[k] = start_col+j;
+             ++k;
             }
-        
-        /* Ptint elements of next diagonal on next line */
+        //     if(NUM_THREADS <= count-1){
+        //         for(int i = 0; i < NUM_THREADS; ++i){
+        //         thread_data_array[i].thread_id = i;
+        //         thread_data_array[i].p_charGrid = mChargrid;
+        //         thread_data_array[i].p_scoreGrid = mScoregrid;
+        //         thread_data_array[i].p_gridWidth = mGridWidth;
+        //         thread_data_array[i].p_gridLength = mGridLength;
+        //         thread_data_array[i].p_fastaFile1 = mFastaFile1;
+        //         thread_data_array[i].p_fastaFile2 = mFastaFile2;
+        //         thread_data_array[i].p_i_indices = i_indices;
+        //         thread_data_array[i].p_j_indices = j_indices;
+        //         thread_data_array[i].start = ((count-1)/NUM_THREADS)*i;
+        //         if(i == NUM_THREADS -1 ){
+        //             thread_data_array[i].end = count-1;
+        //         } else {
+        //             thread_data_array[i].end = ((count-1)/NUM_THREADS)*(i+1);
+        //         }
+        //         rc = pthread_create(&threads[i],NULL,threadFunc,(void*)&thread_data_array[i]);
+        //         if (rc) { printf("ERROR; return code from pthread_create() is %d\n", rc); exit(-1);}
+        //         }
 
+        //     for(int i=0; i <NUM_THREADS; i++){
+        //      (void) pthread_join(threads[i], NULL);
+        //     } 
+         
+        // }
+        //printf("total serial iter:%d. current iter:%d. Count:%d\n",(mGridLength + mGridWidth -1),line,count);
     }
 
 
@@ -230,17 +245,34 @@ void SequenceAlignment::processGenes(){
     mBestscore = mScoregrid[finalI][finalJ];
     while(finalI != 0 || finalJ != 0){
         if(mChargrid[finalI][finalJ] == aboveLeft){
-            mResultB += mFastaFile2->mSequence[finalI - 1];
-            mResultA += mFastaFile1->mSequence[finalJ - 1];
+            if(mGridWidth>mGridLength){
+                mResultB += mFastaFile2->mSequence[finalI - 1];
+                mResultA += mFastaFile1->mSequence[finalJ - 1];
+            }else{
+                mResultB += mFastaFile1->mSequence[finalI - 1];
+                mResultA += mFastaFile2->mSequence[finalJ - 1];
+            }
             finalI--;
             finalJ--;
         } else if(mChargrid[finalI][finalJ] == left){
-            mResultB += '_';
-            mResultA += mFastaFile1->mSequence[finalJ - 1];
+            if(mGridWidth>mGridLength){
+                mResultB += '_';
+                mResultA += mFastaFile1->mSequence[finalJ - 1];
+            } else {
+                mResultB += '_';
+                mResultA += mFastaFile2->mSequence[finalJ - 1];
+            }
+            
             finalJ--;
         } else if(mChargrid[finalI][finalJ] == above){
-            mResultB += mFastaFile2->mSequence[finalI - 1];
-            mResultA += '_';
+            if(mGridWidth>mGridLength){
+                mResultB += mFastaFile2->mSequence[finalI - 1];
+                mResultA += '_';
+            } else {
+                mResultB += mFastaFile1->mSequence[finalI - 1];
+                mResultA += '_';
+            }
+            
             finalI--;
         }
 
@@ -271,8 +303,14 @@ SequenceAlignment::SequenceAlignment(std::string &file1, std::string &file2){
     //initialize Fasta parser and DNA Translator
     mFastaFile1 = new FASTAParse(file1);
     mFastaFile2 = new FASTAParse(file2);
-    mGridLength = mFastaFile2->mSequence.length();
-    mGridWidth = mFastaFile1->mSequence.length();
+    if(mFastaFile2->mSequence.length()<mFastaFile1->mSequence.length()){
+        mGridLength = mFastaFile2->mSequence.length();
+        mGridWidth = mFastaFile1->mSequence.length();
+    } else {
+        mGridLength = mFastaFile1->mSequence.length();
+        mGridWidth = mFastaFile2->mSequence.length();
+    }
+    
     if(mGridLength > mGridWidth){
         mResultA.reserve(mGridLength);
         mResultB.reserve(mGridLength);
