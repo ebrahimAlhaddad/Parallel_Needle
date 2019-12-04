@@ -1,5 +1,78 @@
 #include "SequenceAlignment.h"
 #include <algorithm>
+#include <cmath>
+#include <time.h>
+#include <pthread.h>
+
+enum direction:char
+{
+    aboveLeft,
+    left,
+    above
+};
+
+// thread data for each thread when initializing matrix
+pthread_mutex_t lock_Init;
+struct  thread_data_Init
+{
+    int thread_id_Init;
+    short** pScoreGrid;
+    char** pCharGrid;
+    int pGridLength;
+    int pGridWidth;
+    int pInitScore;
+
+
+};
+
+void* SequenceAlignment::matrixInit(void *threadArg)
+{
+  enum direction:char
+  {
+      aboveLeft,
+      left,
+      above
+  };
+  struct thread_data_Init *my_data_Init;
+  my_data_Init = (struct thread_data_Init *) threadArg;
+  short** myScoreGrid_Init = my_data_Init->pScoreGrid;
+  char** myCharGrid_Init = my_data_Init->pCharGrid;
+  int myThreadId_Init = my_data_Init -> thread_id_Init;
+  int myGridLength_Init = my_data_Init -> pGridLength;
+  int myGridWith_Init = my_data_Init -> pGridWidth;
+  int myScore_Init = my_data_Init -> pInitScore;
+  // char myLeft = my_data_Init -> DirectionLeft;
+  // char myAbove = my_data_Init -> DirectionAbove;
+  if(myThreadId_Init == 0)
+  {
+    for(int i = 0; i < myGridWith_Init + 1; i++)
+    {
+        myScoreGrid_Init[0][i] = myScore_Init;
+        myScore_Init--;
+        if(i != 0)
+        {
+            myCharGrid_Init[0][i] = left;
+
+        }
+    }
+  }
+  else
+  {
+    //initVal = above;
+    for(int i = 0; i < myGridLength_Init + 1; i++)
+    {
+        myScoreGrid_Init[i][0] = myScore_Init;
+        myScore_Init--;
+        if(i != 0)
+        {
+            myCharGrid_Init[i][0] = above;
+        }
+    }
+  }
+
+  pthread_exit(NULL);
+}
+
 
 
 //creates comparison file (.result)
@@ -55,27 +128,71 @@ void SequenceAlignment::createFile(){
     delete[] bonds;
 };
 
-void SequenceAlignment::processGenes(){
+void SequenceAlignment::processGenes()
+{
+
+  //**********begin of paralell section below ************
+  //return val when creating thread
+    int return_Val_Init;
+    //array with all thread data needed to be passed when creating active thread
+    struct  thread_data_Init  thread_data_arrayJP[2];
     //initialization
     short initScore = 0;
-    //direction initVal = left;
-    for(int i = 0; i < mGridWidth + 1; i++){
-        mScoregrid[0][i] = initScore;
-        initScore--;
-        if(i != 0){
-            mChargrid[0][i] = left;
-        }
-    }
-    initScore = 0;
-    //initVal = above;
-    for(int i = 0; i < mGridLength + 1; i++){
-        mScoregrid[i][0] = initScore;
-        initScore--;
-        if(i != 0){
-            mChargrid[i][0] = above;
-        }
-    }
-    
+    //declaring threads:
+   pthread_t threads_Init[2];
+   for(int i = 0; i < 2; i++)
+   {
+     thread_data_arrayJP[i].thread_id_Init = i;
+     thread_data_arrayJP[i].pScoreGrid = mScoregrid;
+     thread_data_arrayJP[i].pCharGrid = mChargrid;
+     thread_data_arrayJP[i].pGridLength = mGridLength;
+     thread_data_arrayJP[i].pGridWidth = mGridWidth;
+     thread_data_arrayJP[i].pInitScore = initScore;
+     thread_data_arrayJP[i].pInitScore = initScore;
+     // thread_data_arrayJP[i].DirectionLeft = left;
+     // thread_data_arrayJP[i].DirectionAbove= above;
+     return_Val_Init = pthread_create(&threads_Init[i],NULL,&SequenceAlignment::matrixInit, (void *) &thread_data_arrayJP[i]);
+       //in case pthreate create fails and returns 0
+       if (return_Val_Init) { printf("ERROR; return code from pthread_create() is %d\n", return_Val_Init); exit(-1);}
+   }
+
+   for(int i=0; i < 2; i++)
+   {
+     (void) pthread_join(threads_Init[i], NULL);
+   }
+
+   for(int i = 0; i < mGridWidth + 1; i++)
+   {
+      std::cout << "score Grid[0][" << i << "]: " << mScoregrid[0][i];
+      std::cout << "  char Grid[0][" << i << "]: ";
+      if(mChargrid[0][i] == left)
+      {
+        std::cout << "== left \n";
+      }
+      else
+      {
+        std::cout << "\n";
+      }
+   }
+   for(int i = 0; i < mGridLength + 1; i++)
+   {
+      std::cout << "score Grid[" << i << "][0]: " << mScoregrid[i][0];
+      std::cout << "  char Grid[" << i << "][0]: ";
+      if(mChargrid[i][0] == above)
+      {
+        std::cout << "== above \n";
+      }
+      else
+      {
+        std::cout << "\n";
+      }
+   }
+
+
+
+      //**********end of paralell section below ************
+
+
     //main loop
     short scoreA = 0;
     short scoreB = 0;
@@ -169,10 +286,13 @@ SequenceAlignment::SequenceAlignment(std::string &file1, std::string &file2){
     }
     mScoregrid = new short*[mGridLength + 1];
     mChargrid = new char*[mGridLength + 1];
+
+    //**********begin of paralell section below ************
     for(int i = 0; i < mGridLength + 1; i++){
         mScoregrid[i] = new short[mGridWidth + 1];
         mChargrid[i] = new char[mGridWidth + 1];
     }
-    
-    
+        //**********end of paralell section below ************
+
+
 };

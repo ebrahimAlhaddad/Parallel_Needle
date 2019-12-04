@@ -9,11 +9,6 @@
 
 class SequenceAlignment{
 private:
-    enum direction:char {
-        aboveLeft,
-        left,
-        above
-    };
     FASTAParse* mFastaFile1;
     FASTAParse* mFastaFile2;
     int mGridLength;
@@ -24,9 +19,10 @@ private:
     std::string mResultB;
     short mBestscore;
 public:
+    static void* matrixInit(void *threadArg);
     SequenceAlignment(std::string &file1, std::string &file2);
     void processGenes();
     void createFile();
-    
-    
+
+
 };
