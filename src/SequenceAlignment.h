@@ -23,8 +23,9 @@ private:
     std::string mResultA;
     std::string mResultB;
     short mBestscore;
+    int mThreads;
 public:
-    SequenceAlignment(std::string &file1, std::string &file2);
+    SequenceAlignment(int threads, std::string &file1, std::string &file2);
     void processGenes();
     void createFile();
     

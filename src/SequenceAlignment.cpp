@@ -180,7 +180,7 @@ void SequenceAlignment::processGenes(){
     int *j_indices = new int[indices_size];
     //pThread setup
     int rc;
-    int NUM_THREADS = 2;
+    int NUM_THREADS = mThreads;
     struct thread_data thread_data_array[NUM_THREADS];
     pthread_t threads[NUM_THREADS];
         for(int i = 1; i < mGridWidth; i++){
@@ -307,9 +307,7 @@ void SequenceAlignment::processGenes(){
 
     }
     
-    if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
-    time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
-    printf("Execution time = %f sec.\n", time);
+   
     
     
     //delete grids to improve performance
@@ -324,12 +322,17 @@ void SequenceAlignment::processGenes(){
     //reverse result sequence
     std::reverse(mResultA.begin(),mResultA.end());
     std::reverse(mResultB.begin(),mResultB.end());
+    
+     if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
+    time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+    printf("Execution time = %f sec.\n", time);
 };
 
 //initialize grids for the algorithm and parse fasta files
 //input: directory into comparison fasta files
-SequenceAlignment::SequenceAlignment(std::string &file1, std::string &file2){
+SequenceAlignment::SequenceAlignment(int threads, std::string &file1, std::string &file2){
     //initialize Fasta parser and DNA Translator
+    mThreads = threads;
     mFastaFile1 = new FASTAParse(file1);
     mFastaFile2 = new FASTAParse(file2);
     mGridLength = mFastaFile2->mSequence.length();
