@@ -189,7 +189,7 @@ void SequenceAlignment::processGenes(){
             for(int j = i; j >= 1; --j){
                 r = r + 1;
                 int c = j;
-                if(r > mGridLength-1){
+                if(r > mGridLength){
                     break;
                 }else{
                     i_indices[count] = r;
@@ -226,15 +226,15 @@ void SequenceAlignment::processGenes(){
                         for(int i=0; i <NUM_THREADS; i++){
                         (void) pthread_join(threads[i], NULL);
                         } 
-                                        printf("\n");
+                                        //printf("\n");
 
         
         }
 
-    for(int k = 2; k < mGridLength; k++){
-        int j = mGridWidth-1;
+    for(int k = 1; k <= mGridLength; k++){
+        int j = mGridWidth;
         int count = 0;
-        for(int i = k; i < mGridLength; ++i){
+        for(int i = k; i <= mGridLength; ++i){
             int r = i;
             int c = j;
             --j;
@@ -269,20 +269,21 @@ void SequenceAlignment::processGenes(){
                         for(int i=0; i <NUM_THREADS; i++){
                         (void) pthread_join(threads[i], NULL);
                         } 
-                                                printf("\n");
+                                                //printf("\n");
 
     }
             
 
-    
-    // for(int i = 0; i < mGridLength; ++i){
-    //     for(int j = 0; j < mGridWidth; ++j){
-    //         printf("|%d|",mChargrid[i][j]);
-    //     }
-    //     printf("\n");
-    // }
 
-    // 
+
+    // std::ofstream oFile("scoreMatrix");
+    // for(int i = 0; i <= mGridLength; ++i){
+    //     for(int j = 0; j <= mGridWidth; ++j){
+    //         oFile << "|" << mScoregrid[i][j] << "|";
+    //     }
+    //     oFile << std::endl;
+    // }
+    // oFile.close();
 
     //picking the perfect alignment
     int finalI = mGridLength;
