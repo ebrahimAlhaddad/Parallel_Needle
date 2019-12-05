@@ -57,7 +57,7 @@ void *threadFunc(void *threadarg){
     for(int k = start; k < end; k++){
         //compute score
             //scoreA
-            printf("T(%d,%d)",i_indices[k],j_indices[k]);
+            //printf("T(%d,%d)",i_indices[k],j_indices[k]);
             
             scoreA = mScoregrid[i_indices[k]-1][j_indices[k]-1];
             if(mFastaFile2->mSequence[i_indices[k]-1] == mFastaFile1->mSequence[j_indices[k]-1]){
@@ -275,21 +275,14 @@ void SequenceAlignment::processGenes(){
             
 
     
-    for(int i = 0; i < mGridLength; ++i){
-        for(int j = 0; j < mGridWidth; ++j){
-            printf("|%d|",mChargrid[i][j]);
-        }
-        printf("\n");
-    }
-
-    // std::ofstream oFile("scoreMatrix");
     // for(int i = 0; i < mGridLength; ++i){
     //     for(int j = 0; j < mGridWidth; ++j){
-    //         oFile << "|" << mScoregrid[i][j] << "|";
+    //         printf("|%d|",mChargrid[i][j]);
     //     }
-    //     oFile << std::endl;
+    //     printf("\n");
     // }
-    // oFile.close();
+
+    // 
 
     //picking the perfect alignment
     int finalI = mGridLength;
