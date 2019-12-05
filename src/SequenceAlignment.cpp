@@ -57,9 +57,12 @@ void SequenceAlignment::createFile(){
     delete[] bonds;
 };
 
-void SequenceAlignment::processGenes(){
+void SequenceAlignment::processGenes()
+{
     struct timespec start, stop;
     double time;
+
+    //start execution time
     if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
     //initialization
     short initScore = 0;
@@ -80,7 +83,7 @@ void SequenceAlignment::processGenes(){
             mChargrid[i][0] = above;
         }
     }
-    
+
     //main loop
     short scoreA = 0;
     short scoreB = 0;
@@ -143,12 +146,9 @@ void SequenceAlignment::processGenes(){
         }
 
     }
-    
-    if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
-    time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
-    printf("Execution time = %f sec.\n", time);
-    
-    
+
+
+
     //delete grids to improve performance
     for(int i = 0; i < mGridLength; i++){
         delete[] mScoregrid[i];
@@ -161,6 +161,13 @@ void SequenceAlignment::processGenes(){
     //reverse result sequence
     std::reverse(mResultA.begin(),mResultA.end());
     std::reverse(mResultB.begin(),mResultB.end());
+
+//getting end of execution time
+    if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
+    time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+
+    printf("Execution time = %f sec.\n", time);
+
 };
 
 //initialize grids for the algorithm and parse fasta files
@@ -184,6 +191,6 @@ SequenceAlignment::SequenceAlignment(std::string &file1, std::string &file2){
         mScoregrid[i] = new short[mGridWidth + 1];
         mChargrid[i] = new char[mGridWidth + 1];
     }
-    
-    
+
+
 };
