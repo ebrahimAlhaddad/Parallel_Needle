@@ -24,8 +24,8 @@ int main()
     //         printf("start_col:%d, count:%d line:%d\n",start_col,count,line);
     // }
 
-    int ROW = 5;
-    int COL = 8;
+    int ROW = 7;
+    int COL = 11;
     for(int i = 0; i < ROW; ++i){
         for(int j = 0; j < COL; ++j){
             printf("|(%d,%d)|",i,j);
@@ -59,3 +59,5 @@ int main()
 
     }
 }
+
+
