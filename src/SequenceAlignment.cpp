@@ -130,7 +130,11 @@ void SequenceAlignment::createFile(){
 
 void SequenceAlignment::processGenes()
 {
+  struct timespec start, stop;
+   double time;
 
+//measure time starts now
+   if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
   //**********begin of paralell section below ************
   //return val when creating thread
     int return_Val_Init;
@@ -161,32 +165,32 @@ void SequenceAlignment::processGenes()
      (void) pthread_join(threads_Init[i], NULL);
    }
 
-   for(int i = 0; i < mGridWidth + 1; i++)
-   {
-      std::cout << "score Grid[0][" << i << "]: " << mScoregrid[0][i];
-      std::cout << "  char Grid[0][" << i << "]: ";
-      if(mChargrid[0][i] == left)
-      {
-        std::cout << "== left \n";
-      }
-      else
-      {
-        std::cout << "\n";
-      }
-   }
-   for(int i = 0; i < mGridLength + 1; i++)
-   {
-      std::cout << "score Grid[" << i << "][0]: " << mScoregrid[i][0];
-      std::cout << "  char Grid[" << i << "][0]: ";
-      if(mChargrid[i][0] == above)
-      {
-        std::cout << "== above \n";
-      }
-      else
-      {
-        std::cout << "\n";
-      }
-   }
+   // for(int i = 0; i < mGridWidth + 1; i++)
+   // {
+   //    std::cout << "score Grid[0][" << i << "]: " << mScoregrid[0][i];
+   //    std::cout << "  char Grid[0][" << i << "]: ";
+   //    if(mChargrid[0][i] == left)
+   //    {
+   //      std::cout << "== left \n";
+   //    }
+   //    else
+   //    {
+   //      std::cout << "\n";
+   //    }
+   // }
+   // for(int i = 0; i < mGridLength + 1; i++)
+   // {
+   //    std::cout << "score Grid[" << i << "][0]: " << mScoregrid[i][0];
+   //    std::cout << "  char Grid[" << i << "][0]: ";
+   //    if(mChargrid[i][0] == above)
+   //    {
+   //      std::cout << "== above \n";
+   //    }
+   //    else
+   //    {
+   //      std::cout << "\n";
+   //    }
+   // }
 
 
 
@@ -267,6 +271,14 @@ void SequenceAlignment::processGenes()
     //reverse result sequence
     std::reverse(mResultA.begin(),mResultA.end());
     std::reverse(mResultB.begin(),mResultB.end());
+
+    // measure the end time here
+      if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
+      time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+
+      // print out the execution time here
+  printf("Execution time = %f sec\n", time);
+
 };
 
 //initialize grids for the algorithm and parse fasta files
