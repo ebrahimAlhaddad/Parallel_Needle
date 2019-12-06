@@ -184,9 +184,7 @@ void SequenceAlignment::processGenes(){
     struct thread_data thread_data_array[NUM_THREADS];
     pthread_t threads[NUM_THREADS];
         for(int i = 1; i < mGridWidth; i++){
-            struct timespec start, stop;
-    double time;
-    if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
+            
             int r = 0;
             int count = 0;
             for(int j = i; j >= 1; --j){
@@ -226,18 +224,13 @@ void SequenceAlignment::processGenes(){
                             rc = pthread_create(&threads[i],NULL,threadFunc,(void*)&thread_data_array[i]);
                             if (rc) { printf("ERROR; return code from pthread_create() is %d\n", rc); exit(-1);}
                         }
-if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
-    time += (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+
                         for(int i=0; i <NUM_THREADS; i++){
                         (void) pthread_join(threads[i], NULL);
                         } 
-                                        //printf("\n");
-
-        
         }
 
     for(int k = 1; k <= mGridLength; k++){
-            if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
 
         int j = mGridWidth;
         int count = 0;
@@ -248,8 +241,6 @@ if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
             i_indices[count] = r;
             j_indices[count] = c;
             ++count;
-                                    //printf("(%d,%d)",r,c);
-
         }
 
         for(int i = 0; i < NUM_THREADS; i++){
@@ -272,8 +263,6 @@ if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
                             rc = pthread_create(&threads[i],NULL,threadFunc,(void*)&thread_data_array[i]);
                             if (rc) { printf("ERROR; return code from pthread_create() is %d\n", rc); exit(-1);}
                         }
-if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
-    time += (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
                         for(int i=0; i <NUM_THREADS; i++){
                         (void) pthread_join(threads[i], NULL);
                         } 
@@ -281,10 +270,6 @@ if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}
 
     }
             
-
-
-    printf("Hardcoded Overhead time = %f sec.\n", time);
-
     // std::ofstream oFile("scoreMatrix");
     // for(int i = 0; i <= mGridLength; ++i){
     //     for(int j = 0; j <= mGridWidth; ++j){
