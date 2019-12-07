@@ -25,6 +25,7 @@ private:
     short mBestscore;
     int mThreads;
 public:
+    static void* matrixInit(void *threadArg);
     SequenceAlignment(int threads, std::string &file1, std::string &file2);
     void processGenes();
     void createFile();
