@@ -1,5 +1,5 @@
 # Parallel_Needle
 
-## NEVER PUSH OBJECT FILES TO REPO!
+## Parallel computation test with diagonal traversal is in the "diagonalTraversal" branch
 
-## Keep it clean
+## Purely serial implementation test is in the "VenillaSerial" branch
