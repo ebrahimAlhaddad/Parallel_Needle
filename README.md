@@ -8,4 +8,4 @@
 
 - Matrix initialization with the blocking technique is in the "initMatrixBlockStyle" branch
 
-###Each branch has instructions in their readme.md
+### Each branch has instructions in their readme.md
