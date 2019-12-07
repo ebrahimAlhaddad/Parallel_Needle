@@ -63,7 +63,6 @@ void SequenceAlignment::processGenes(){
     
     //initialization
     short initScore = 0;
-    printf("%d",left);
     //direction initVal = left;
     for(int i = 0; i < mGridWidth + 1; i++){
         mScoregrid[0][i] = initScore;
@@ -142,7 +141,6 @@ void SequenceAlignment::processGenes(){
     //picking the perfect alignment
     int finalI = mGridLength;
     int finalJ = mGridWidth;
-    printf("\n%d,%d",finalI,finalJ);
     mBestscore = mScoregrid[finalI][finalJ];
     while(finalI != 0 || finalJ != 0){
         if(mChargrid[finalI][finalJ] == aboveLeft){
