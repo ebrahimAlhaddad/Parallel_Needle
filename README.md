@@ -1,4 +1,5 @@
 # Parallel_Needle
+## Project Report is in Master above
 
 - Parallel computation test with diagonal traversal is in the "diagonalTraversal" branch
 
@@ -8,4 +9,4 @@
 
 - Matrix initialization with the blocking technique is in the "initMatrixBlockStyle" branch
 
-### Each branch has instructions in their readme.md
+## Each branch has instructions in their readme.md
